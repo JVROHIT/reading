@@ -9,14 +9,14 @@ import org.springframework.stereotype.Service;
 public class LlmClientService {
 
     /**
-     * Calls the LLM API with the given system and user messages.
+     * Calls the LLM API with the given system and user prompts.
      *
-     * @param systemMessage the system prompt
-     * @param userMessage the user message
+     * @param systemPrompt the system prompt
+     * @param userPrompt the user prompt
      * @return the raw string response from the LLM
+     * @throws UnsupportedOperationException if LLM is not configured
      */
-    public String call(String systemMessage, String userMessage) {
-        return null;
+    public String chat(String systemPrompt, String userPrompt) {
+        throw new UnsupportedOperationException("LLM not configured");
     }
 }
-

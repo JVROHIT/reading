@@ -1,11 +1,19 @@
 package com.example.reading.controller;
 
+import com.example.reading.service.llm.LlmClientService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,11 +21,28 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Tests for LearningController validation and endpoint behavior.
  */
-@WebMvcTest(LearningController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class LearningControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private LlmClientService llmClientService;
+
+    @BeforeEach
+    void setUp() {
+        // Default mock responses for orchestrator and agents
+        String orchestratorSummaryResponse = """
+                {"decision": "SUMMARY", "explanation": "Default to summary"}
+                """;
+        String summaryResponse = "Default summary content";
+
+        when(llmClientService.chat(anyString(), anyString()))
+                .thenReturn(orchestratorSummaryResponse)
+                .thenReturn(summaryResponse);
+    }
 
     @Test
     void shouldReturn400WhenInstructionIsBlank() throws Exception {
@@ -94,7 +119,53 @@ class LearningControllerTest {
     }
 
     @Test
-    void shouldReturn501WithNonNullResponseForValidRequest() throws Exception {
+    void shouldReturnQuizWithThreeQuestionsForQuizInstruction() throws Exception {
+        String orchestratorResponse = """
+                {"decision": "QUIZ", "explanation": "User wants a quiz"}
+                """;
+        String quizResponse = """
+                {
+                    "questions": [
+                        {"type": "MCQ", "question": "Q1?", "options": ["A", "B", "C", "D"], "answer": "A"},
+                        {"type": "MCQ", "question": "Q2?", "options": ["A", "B", "C", "D"], "answer": "B"},
+                        {"type": "SHORT_ANSWER", "question": "Q3?", "options": [], "answer": "Answer"}
+                    ]
+                }
+                """;
+
+        when(llmClientService.chat(anyString(), contains("Instruction:")))
+                .thenReturn(orchestratorResponse)
+                .thenReturn(quizResponse);
+
+        String requestBody = """
+                {
+                    "instruction": "create a quiz on this",
+                    "text": "Some valid text content to create quiz from"
+                }
+                """;
+
+        mockMvc.perform(post("/api/learning")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.action").value("QUIZ"))
+                .andExpect(jsonPath("$.quiz", hasSize(3)))
+                .andExpect(jsonPath("$.quiz[0].type").value("MCQ"))
+                .andExpect(jsonPath("$.quiz[1].type").value("MCQ"))
+                .andExpect(jsonPath("$.quiz[2].type").value("SHORT_ANSWER"));
+    }
+
+    @Test
+    void shouldReturnSummaryForSummariseInstruction() throws Exception {
+        String orchestratorResponse = """
+                {"decision": "SUMMARY", "explanation": "User wants a summary"}
+                """;
+        String summaryResponse = "This is a great summary of the content.";
+
+        when(llmClientService.chat(anyString(), contains("Instruction:")))
+                .thenReturn(orchestratorResponse)
+                .thenReturn(summaryResponse);
+
         String requestBody = """
                 {
                     "instruction": "summarise this",
@@ -105,25 +176,121 @@ class LearningControllerTest {
         mockMvc.perform(post("/api/learning")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isNotImplemented())
-                .andExpect(jsonPath("$").exists())
-                .andExpect(jsonPath("$.explanation").value("Not implemented yet"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.action").value("SUMMARY"))
+                .andExpect(jsonPath("$.summary").value("This is a great summary of the content."));
     }
 
     @Test
-    void shouldAcceptTextExactly50kCharacters() throws Exception {
-        String exactText = "a".repeat(50000);
+    void shouldReturnQuizForTestKeyword() throws Exception {
+        String orchestratorResponse = """
+                {"decision": "QUIZ", "explanation": "User wants a test"}
+                """;
+        String quizResponse = """
+                {
+                    "questions": [
+                        {"type": "MCQ", "question": "Q1?", "options": ["A", "B"], "answer": "A"}
+                    ]
+                }
+                """;
+
+        when(llmClientService.chat(anyString(), contains("Instruction:")))
+                .thenReturn(orchestratorResponse)
+                .thenReturn(quizResponse);
+
         String requestBody = """
                 {
-                    "instruction": "summarise this",
-                    "text": "%s"
+                    "instruction": "test me on this content",
+                    "text": "Some valid text content"
                 }
-                """.formatted(exactText);
+                """;
 
         mockMvc.perform(post("/api/learning")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isNotImplemented());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.action").value("QUIZ"));
+    }
+
+    @Test
+    void shouldReturnSummaryForGenericInstruction() throws Exception {
+        String orchestratorResponse = """
+                {"decision": "SUMMARY", "explanation": "Defaulting to summary"}
+                """;
+        String summaryResponse = "MCQ summary content";
+
+        when(llmClientService.chat(anyString(), contains("Instruction:")))
+                .thenReturn(orchestratorResponse)
+                .thenReturn(summaryResponse);
+
+        String requestBody = """
+                {
+                    "instruction": "explain this to me",
+                    "text": "Some valid text content"
+                }
+                """;
+
+        mockMvc.perform(post("/api/learning")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.action").value("SUMMARY"));
+    }
+
+    @Test
+    void shouldReturnQuizForPracticeKeyword() throws Exception {
+        String orchestratorResponse = """
+                {"decision": "QUIZ", "explanation": "User wants practice"}
+                """;
+        String quizResponse = """
+                {
+                    "questions": [
+                        {"type": "MCQ", "question": "Q1?", "options": ["A", "B"], "answer": "A"}
+                    ]
+                }
+                """;
+
+        when(llmClientService.chat(anyString(), contains("Instruction:")))
+                .thenReturn(orchestratorResponse)
+                .thenReturn(quizResponse);
+
+        String requestBody = """
+                {
+                    "instruction": "practice questions please",
+                    "text": "Some valid text content"
+                }
+                """;
+
+        mockMvc.perform(post("/api/learning")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.action").value("QUIZ"));
+    }
+
+    @Test
+    void shouldReturnSummaryContentFromLlm() throws Exception {
+        String orchestratorResponse = """
+                {"decision": "SUMMARY", "explanation": "User wants a summary"}
+                """;
+        String summaryResponse = "LLM generated summary content here";
+
+        when(llmClientService.chat(anyString(), contains("Instruction:")))
+                .thenReturn(orchestratorResponse)
+                .thenReturn(summaryResponse);
+
+        String requestBody = """
+                {
+                    "instruction": "summarise this",
+                    "text": "Some text content"
+                }
+                """;
+
+        mockMvc.perform(post("/api/learning")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.action").value("SUMMARY"))
+                .andExpect(jsonPath("$.summary").value("LLM generated summary content here"));
     }
 }
-

@@ -2,8 +2,8 @@ package com.example.reading.controller;
 
 import com.example.reading.dto.LearningRequest;
 import com.example.reading.dto.LearningResponse;
+import com.example.reading.service.LearningService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,17 +17,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/learning")
 public class LearningController {
 
+    private final LearningService learningService;
+
+    public LearningController(LearningService learningService) {
+        this.learningService = learningService;
+    }
+
     /**
      * Processes a learning request to generate a summary or quiz.
      *
      * @param request the learning request containing instruction and text
-     * @return the learning response with HTTP 501 Not Implemented
+     * @return the learning response with HTTP 200 OK
      */
     @PostMapping
     public ResponseEntity<LearningResponse> processLearningRequest(@Valid @RequestBody LearningRequest request) {
-        LearningResponse response = LearningResponse.builder()
-                .explanation("Not implemented yet")
-                .build();
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(response);
+        LearningResponse response = learningService.process(request);
+        return ResponseEntity.ok(response);
     }
 }

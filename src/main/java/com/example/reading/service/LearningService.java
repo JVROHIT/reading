@@ -23,7 +23,6 @@ public class LearningService {
      * @return the learning response
      */
     public LearningResponse process(LearningRequest request) {
-        return null;
+        return orchestratorService.orchestrate(request);
     }
 }
-

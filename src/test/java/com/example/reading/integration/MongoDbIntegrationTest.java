@@ -4,8 +4,11 @@ import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
+
+import com.example.reading.auth.jwt.JwtService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,6 +22,9 @@ class MongoDbIntegrationTest {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    @MockBean
+    private JwtService jwtService;
 
     @Test
     void contextLoads() {

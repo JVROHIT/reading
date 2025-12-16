@@ -1,4 +1,4 @@
-package com.example.reading.auth;
+package com.example.reading.auth.service;
 
 import com.example.reading.auth.exception.EmailAlreadyUsedException;
 import com.example.reading.auth.exception.InvalidCredentialsException;

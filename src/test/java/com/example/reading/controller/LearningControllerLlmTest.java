@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -21,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests for LearningController with mocked LLM responses.
  */
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc // disables security filters in MockMvc
 class LearningControllerLlmTest {
 
     @Autowired
@@ -31,6 +32,7 @@ class LearningControllerLlmTest {
     private LlmClientService llmClientService;
 
     @Test
+    @WithMockUser
     void shouldReturnQuizWhenLlmDecisionIsQuizAndQuizLlmReturnsValidJson() throws Exception {
         // Mock orchestrator LLM response
         String orchestratorResponse = """
@@ -72,6 +74,7 @@ class LearningControllerLlmTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturnSummaryWhenLlmDecisionIsSummary() throws Exception {
         // Mock orchestrator LLM response
         String orchestratorResponse = """
@@ -101,6 +104,7 @@ class LearningControllerLlmTest {
     }
 
     @Test
+    @WithMockUser
     void shouldFallbackToSummaryWhenQuizLlmReturnsInvalidJson() throws Exception {
         // Mock orchestrator LLM response - decides QUIZ
         String orchestratorResponse = """
@@ -133,6 +137,7 @@ class LearningControllerLlmTest {
     }
 
     @Test
+    @WithMockUser
     void shouldFallbackToSummaryWhenOrchestratorLlmReturnsInvalidJson() throws Exception {
         // Mock orchestrator LLM response - invalid JSON
         String invalidOrchestratorResponse = "not valid json";
@@ -159,6 +164,7 @@ class LearningControllerLlmTest {
     }
 
     @Test
+    @WithMockUser
     void shouldFallbackToSummaryWhenQuizLlmReturnsMissingQuestionsArray() throws Exception {
         // Mock orchestrator LLM response
         String orchestratorResponse = """
@@ -191,5 +197,19 @@ class LearningControllerLlmTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.action").value("SUMMARY"));
     }
-}
 
+    @Test
+    void shouldReturn401WhenNoAuthentication() throws Exception {
+        String requestBody = """
+                {
+                    "instruction": "summarise this",
+                    "text": "Some text content"
+                }
+                """;
+
+        mockMvc.perform(post("/api/learning")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isUnauthorized());
+    }
+}

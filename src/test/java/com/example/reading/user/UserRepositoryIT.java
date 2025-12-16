@@ -1,10 +1,12 @@
 package com.example.reading.user;
 
+import com.example.reading.auth.jwt.JwtService;
 import com.example.reading.config.MongoAuditingConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.test.context.ActiveProfiles;
@@ -25,6 +27,9 @@ class UserRepositoryIT {
 
     @Autowired
     private UserRepository userRepository;
+
+    @MockBean
+    private JwtService jwtService;
 
     @BeforeEach
     void setUp() {

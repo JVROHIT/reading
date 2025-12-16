@@ -2,6 +2,7 @@ package com.example.reading.auth;
 
 import com.example.reading.auth.exception.EmailAlreadyUsedException;
 import com.example.reading.auth.exception.InvalidCredentialsException;
+import com.example.reading.auth.service.AuthService;
 import com.example.reading.user.User;
 import com.example.reading.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: reading
+
+security:
+  jwt:
+    secret: "aGltc2FpbHBvd2VyY29sb3JkZWFkdHJhaWxzaG9yZWluY2hwb3JjaGVpdGhlcndvb2Q="
+    expiration-seconds: 86400
+

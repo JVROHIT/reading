@@ -1,4 +1,4 @@
-package com.example.reading.auth;
+package com.example.reading.auth.controller;
 
 import com.example.reading.auth.exception.EmailAlreadyUsedException;
 import com.example.reading.auth.exception.InvalidCredentialsException;
@@ -18,7 +18,7 @@ public class AuthControllerAdvice {
     @ExceptionHandler(EmailAlreadyUsedException.class)
     public ResponseEntity<Map<String, String>> handleEmailAlreadyUsed(EmailAlreadyUsedException ex) {
         return ResponseEntity
-                .status(HttpStatus.CONFLICT)
+                .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
                         "error", "EMAIL_ALREADY_EXISTS",
                         "message", ex.getMessage()
@@ -35,4 +35,3 @@ public class AuthControllerAdvice {
                 ));
     }
 }
-

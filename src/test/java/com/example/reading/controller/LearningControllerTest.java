@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -22,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests for LearningController validation and endpoint behavior.
  */
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false) // disables security filters in MockMvc
 class LearningControllerTest {
 
     @Autowired
@@ -45,6 +46,7 @@ class LearningControllerTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturn400WhenInstructionIsBlank() throws Exception {
         String requestBody = """
                 {
@@ -60,6 +62,7 @@ class LearningControllerTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturn400WhenInstructionIsNull() throws Exception {
         String requestBody = """
                 {
@@ -74,6 +77,7 @@ class LearningControllerTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturn400WhenTextIsBlank() throws Exception {
         String requestBody = """
                 {
@@ -89,6 +93,7 @@ class LearningControllerTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturn400WhenTextIsNull() throws Exception {
         String requestBody = """
                 {
@@ -103,6 +108,7 @@ class LearningControllerTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturn400WhenTextExceeds50kCharacters() throws Exception {
         String longText = "a".repeat(50001);
         String requestBody = """
@@ -119,6 +125,7 @@ class LearningControllerTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturnQuizWithThreeQuestionsForQuizInstruction() throws Exception {
         String orchestratorResponse = """
                 {"decision": "QUIZ", "explanation": "User wants a quiz"}
@@ -156,6 +163,7 @@ class LearningControllerTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturnSummaryForSummariseInstruction() throws Exception {
         String orchestratorResponse = """
                 {"decision": "SUMMARY", "explanation": "User wants a summary"}
@@ -182,6 +190,7 @@ class LearningControllerTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturnQuizForTestKeyword() throws Exception {
         String orchestratorResponse = """
                 {"decision": "QUIZ", "explanation": "User wants a test"}
@@ -213,6 +222,7 @@ class LearningControllerTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturnSummaryForGenericInstruction() throws Exception {
         String orchestratorResponse = """
                 {"decision": "SUMMARY", "explanation": "Defaulting to summary"}
@@ -238,6 +248,7 @@ class LearningControllerTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturnQuizForPracticeKeyword() throws Exception {
         String orchestratorResponse = """
                 {"decision": "QUIZ", "explanation": "User wants practice"}
@@ -269,6 +280,7 @@ class LearningControllerTest {
     }
 
     @Test
+    @WithMockUser
     void shouldReturnSummaryContentFromLlm() throws Exception {
         String orchestratorResponse = """
                 {"decision": "SUMMARY", "explanation": "User wants a summary"}

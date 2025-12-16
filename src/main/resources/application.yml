@@ -7,3 +7,8 @@ security:
     secret: "aGltc2FpbHBvd2VyY29sb3JkZWFkdHJhaWxzaG9yZWluY2hwb3JjaGVpdGhlcndvb2Q="
     expiration-seconds: 86400
 
+app:
+  encryption:
+    # Base64-encoded 32-byte key for AES-256. Override with APP_ENCRYPTION_KEY_BASE64 env var in production.
+    key-base64: ${APP_ENCRYPTION_KEY_BASE64:dGhpcy1pcy1hLTMyLWJ5dGUta2V5LWZvci10ZXN0ISE=}
+

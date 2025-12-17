@@ -1,6 +1,6 @@
 package com.example.reading.controller;
 
-import com.example.reading.service.llm.LlmClientService;
+import com.example.reading.service.llm.LlmChatService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,6 +11,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.when;
@@ -29,7 +30,7 @@ class LearningControllerLlmTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private LlmClientService llmClientService;
+    private LlmChatService llmClientService;
 
     @Test
     @WithMockUser
@@ -51,7 +52,7 @@ class LearningControllerLlmTest {
                 """;
 
         // First call is for orchestrator, subsequent calls are for quiz agent
-        when(llmClientService.chat(anyString(), contains("Instruction:")))
+        when(llmClientService.chat(anyString(), contains("Instruction:"), any()))
                 .thenReturn(orchestratorResponse)
                 .thenReturn(quizResponse);
 
@@ -84,7 +85,7 @@ class LearningControllerLlmTest {
         // Mock summary LLM response
         String summaryResponse = "hello";
 
-        when(llmClientService.chat(anyString(), contains("Instruction:")))
+        when(llmClientService.chat(anyString(), contains("Instruction:"), any()))
                 .thenReturn(orchestratorResponse)
                 .thenReturn(summaryResponse);
 
@@ -117,7 +118,7 @@ class LearningControllerLlmTest {
         // Mock summary LLM response for fallback
         String summaryResponse = "Fallback summary content";
 
-        when(llmClientService.chat(anyString(), contains("Instruction:")))
+        when(llmClientService.chat(anyString(), contains("Instruction:"), any()))
                 .thenReturn(orchestratorResponse)
                 .thenReturn(invalidQuizResponse)
                 .thenReturn(summaryResponse);
@@ -145,7 +146,7 @@ class LearningControllerLlmTest {
         // Mock summary LLM response for fallback (default is SUMMARY)
         String summaryResponse = "Summary after orchestrator failure";
 
-        when(llmClientService.chat(anyString(), contains("Instruction:")))
+        when(llmClientService.chat(anyString(), contains("Instruction:"), any()))
                 .thenReturn(invalidOrchestratorResponse)
                 .thenReturn(summaryResponse);
 
@@ -179,7 +180,7 @@ class LearningControllerLlmTest {
         // Mock summary LLM response for fallback
         String summaryResponse = "Fallback summary";
 
-        when(llmClientService.chat(anyString(), contains("Instruction:")))
+        when(llmClientService.chat(anyString(), contains("Instruction:"), any()))
                 .thenReturn(orchestratorResponse)
                 .thenReturn(invalidQuizResponse)
                 .thenReturn(summaryResponse);

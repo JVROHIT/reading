@@ -35,6 +35,12 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
+    // LangChain4j for LLM client abstraction
+    implementation 'dev.langchain4j:langchain4j-core:0.30.0'
+    implementation 'dev.langchain4j:langchain4j-open-ai:0.30.0'
+    implementation 'dev.langchain4j:langchain4j-anthropic:0.30.0'
+    implementation 'dev.langchain4j:langchain4j-ollama:0.30.0'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 

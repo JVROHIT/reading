@@ -1,6 +1,6 @@
 package com.example.reading.controller;
 
-import com.example.reading.service.llm.LlmClientService;
+import com.example.reading.service.llm.LlmChatService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -30,7 +31,7 @@ class LearningControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private LlmClientService llmClientService;
+    private LlmChatService llmChatService;
 
     @BeforeEach
     void setUp() {
@@ -40,7 +41,7 @@ class LearningControllerTest {
                 """;
         String summaryResponse = "Default summary content";
 
-        when(llmClientService.chat(anyString(), anyString()))
+        when(llmChatService.chat(anyString(), anyString(), anyString()))
                 .thenReturn(orchestratorSummaryResponse)
                 .thenReturn(summaryResponse);
     }
@@ -140,7 +141,7 @@ class LearningControllerTest {
                 }
                 """;
 
-        when(llmClientService.chat(anyString(), contains("Instruction:")))
+        when(llmChatService.chat(anyString(), contains("Instruction:"), isNull()))
                 .thenReturn(orchestratorResponse)
                 .thenReturn(quizResponse);
 
@@ -170,7 +171,7 @@ class LearningControllerTest {
                 """;
         String summaryResponse = "This is a great summary of the content.";
 
-        when(llmClientService.chat(anyString(), contains("Instruction:")))
+        when(llmChatService.chat(anyString(), contains("Instruction:"), isNull()))
                 .thenReturn(orchestratorResponse)
                 .thenReturn(summaryResponse);
 
@@ -203,7 +204,7 @@ class LearningControllerTest {
                 }
                 """;
 
-        when(llmClientService.chat(anyString(), contains("Instruction:")))
+        when(llmChatService.chat(anyString(), contains("Instruction:"), isNull()))              
                 .thenReturn(orchestratorResponse)
                 .thenReturn(quizResponse);
 
@@ -229,7 +230,7 @@ class LearningControllerTest {
                 """;
         String summaryResponse = "MCQ summary content";
 
-        when(llmClientService.chat(anyString(), contains("Instruction:")))
+        when(llmChatService.chat(anyString(), contains("Instruction:"), anyString()))
                 .thenReturn(orchestratorResponse)
                 .thenReturn(summaryResponse);
 
@@ -261,7 +262,7 @@ class LearningControllerTest {
                 }
                 """;
 
-        when(llmClientService.chat(anyString(), contains("Instruction:")))
+        when(llmChatService.chat(anyString(), contains("Instruction:"), isNull()))
                 .thenReturn(orchestratorResponse)
                 .thenReturn(quizResponse);
 
@@ -287,7 +288,7 @@ class LearningControllerTest {
                 """;
         String summaryResponse = "LLM generated summary content here";
 
-        when(llmClientService.chat(anyString(), contains("Instruction:")))
+        when(llmChatService.chat(anyString(), contains("Instruction:"), isNull()))
                 .thenReturn(orchestratorResponse)
                 .thenReturn(summaryResponse);
 

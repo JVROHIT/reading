@@ -4,7 +4,7 @@ import com.example.reading.dto.ActionType;
 import com.example.reading.dto.DecisionLlmResponse;
 import com.example.reading.dto.LearningRequest;
 import com.example.reading.dto.MasterDecisionResponse;
-import com.example.reading.service.llm.LlmClientService;
+import com.example.reading.service.llm.LlmChatService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.io.ClassPathResource;
@@ -24,11 +24,11 @@ public class QuizSummaryDecisionService implements OrchestratorAgentService {
             Respond with JSON: {"decision": "SUMMARY" or "QUIZ", "explanation": "reason"}
             """;
 
-    private final LlmClientService llmClientService;
+    private final LlmChatService llmClientService;
     private final ObjectMapper objectMapper;
     private final String systemPrompt;
 
-    public QuizSummaryDecisionService(LlmClientService llmClientService, ObjectMapper objectMapper) {
+    public QuizSummaryDecisionService(LlmChatService llmClientService, ObjectMapper objectMapper) {
         this.llmClientService = llmClientService;
         this.objectMapper = objectMapper;
         this.systemPrompt = loadPrompt();
@@ -38,7 +38,8 @@ public class QuizSummaryDecisionService implements OrchestratorAgentService {
     public MasterDecisionResponse generateDecision(LearningRequest request) {
         try {
             String userPrompt = "Instruction: " + request.getInstruction();
-            String llmResponse = llmClientService.chat(systemPrompt, userPrompt);
+            String provider = request.getProvider() != null ? request.getProvider().name() : null;
+            String llmResponse = llmClientService.chat(systemPrompt, userPrompt, provider);
             
             DecisionLlmResponse decisionResponse = objectMapper.readValue(llmResponse, DecisionLlmResponse.class);
             ActionType action = parseActionType(decisionResponse.getDecision());

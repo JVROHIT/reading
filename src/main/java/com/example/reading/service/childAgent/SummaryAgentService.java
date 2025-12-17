@@ -3,7 +3,7 @@ package com.example.reading.service.childAgent;
 import com.example.reading.dto.ActionType;
 import com.example.reading.dto.AgentResponse;
 import com.example.reading.dto.LearningRequest;
-import com.example.reading.service.llm.LlmClientService;
+import com.example.reading.service.llm.LlmChatService;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +20,10 @@ public class SummaryAgentService implements ChildAgentService {
             You are an expert summarizer. Produce a concise, accurate summary of the provided text.
             """;
 
-    private final LlmClientService llmClientService;
+    private final LlmChatService llmClientService;
     private final String systemPrompt;
 
-    public SummaryAgentService(LlmClientService llmClientService) {
+    public SummaryAgentService(LlmChatService llmClientService) {
         this.llmClientService = llmClientService;
         this.systemPrompt = loadPrompt();
     }
@@ -32,7 +32,8 @@ public class SummaryAgentService implements ChildAgentService {
     public AgentResponse generateResponse(LearningRequest request) {
         try {
             String userPrompt = "Instruction: " + request.getInstruction() + "\n\nText:\n" + request.getText();
-            String summaryContent = llmClientService.chat(systemPrompt, userPrompt);
+            String provider = request.getProvider() != null ? request.getProvider().name() : null;
+            String summaryContent = llmClientService.chat(systemPrompt, userPrompt, provider);
             
             return AgentResponse.builder()
                     .action(ActionType.SUMMARY)

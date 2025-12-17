@@ -10,6 +10,7 @@ import java.util.Map;
 
 /**
  * Exception handler for credential-related exceptions.
+ * Scoped to CredentialController only to avoid conflicts with LlmControllerAdvice.
  */
 @RestControllerAdvice(assignableTypes = CredentialController.class)
 public class CredentialControllerAdvice {

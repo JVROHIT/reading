@@ -4,7 +4,7 @@ import com.example.reading.dto.ActionType;
 import com.example.reading.dto.AgentResponse;
 import com.example.reading.dto.LearningRequest;
 import com.example.reading.dto.QuizQuestionDto;
-import com.example.reading.service.llm.LlmClientService;
+import com.example.reading.service.llm.LlmChatService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,11 +27,11 @@ public class QuizAgentService implements ChildAgentService {
             Respond with JSON: {"questions": [{"type": "MCQ", "question": "...", "options": [...], "answer": "..."}]}
             """;
 
-    private final LlmClientService llmClientService;
+    private final LlmChatService llmClientService;
     private final ObjectMapper objectMapper;
     private final String systemPrompt;
 
-    public QuizAgentService(LlmClientService llmClientService, ObjectMapper objectMapper) {
+    public QuizAgentService(LlmChatService llmClientService, ObjectMapper objectMapper) {
         this.llmClientService = llmClientService;
         this.objectMapper = objectMapper;
         this.systemPrompt = loadPrompt();
@@ -41,7 +41,8 @@ public class QuizAgentService implements ChildAgentService {
     public AgentResponse generateResponse(LearningRequest request) {
         try {
             String userPrompt = "Instruction: " + request.getInstruction() + "\n\nText:\n" + request.getText();
-            String llmResponse = llmClientService.chat(systemPrompt, userPrompt);
+            String provider = request.getProvider() != null ? request.getProvider().name() : null;
+            String llmResponse = llmClientService.chat(systemPrompt, userPrompt, provider);
             
             List<QuizQuestionDto> questions = parseQuizQuestions(llmResponse);
             String content = objectMapper.writeValueAsString(questions);
